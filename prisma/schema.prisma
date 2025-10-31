@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- CONTRATO DE MODELOS ---
+// O pacote de autenticação espera que o schema do app consumidor
+// tenha (no mínimo) estes campos e modelos.
+
+model Usuario {
+  id    String @id @default(uuid()) @map("idUsuario")
+  nome  String @map("nomeUsuario")
+  email String @unique
+  senha String
+
+  // O pacote espera que este campo exista.
+  // O valor (@default) será injetado pelo app consumidor.
+  cargo RoleUsuario
+
+  // CAMPO OBRIGATÓRIO para verificação de email
+  emailVerificado Boolean @default(false)
+
+  // Relações que o pacote de auth precisa gerenciar
+  authTokens        AuthToken[]
+  authRefreshTokens AuthRefreshToken[]
+
+  @@map("usuario")
+}
+
+// Para verificação de email e reset de senha
+model AuthToken {
+  id        String        @id @default(uuid())
+  token     String        @unique // Este será o HASH (SHA-256) do token
+  tipo      AuthTokenType
+  expiresAt DateTime
+  usado     Boolean       @default(false)
+  payload   Json? // Para armazenar dados extras (ex: novo email em EMAIL_UPDATE)
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("authToken")
+}
+
+// Para Refresh Tokens (JWT)
+model AuthRefreshToken {
+  id            String   @id @default(uuid())
+  selector      String   @unique // O "seletor" público para busca rápida
+  validatorHash String // O "verificador" secreto hashado (SHA-256)
+  expiresAt     DateTime
+  revogado      Boolean  @default(false) // Para o logout
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("authRefreshToken")
+}
+
+// --- ENUMS OBRIGATÓRIOS ---
+
+// O app consumidor deve definir este enum
+enum RoleUsuario {
+  CLIENTE
+  FUNCIONARIO
+  ADMIN
+}
+
+// O app consumidor deve definir este enum
+enum AuthTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  EMAIL_UPDATE
+}

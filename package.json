@@ -1,0 +1,56 @@
+{
+  "name": "@JoaoSchmitz/express-prisma-auth",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Um módulo de autenticação reutilizável para aplicações Node.js que usam Express e Prisma. Fornece rotas, serviços e middlewares prontos para uso.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoaoSchmitz/express-prisma-auth.git"
+  },
+  "keywords": [
+    "auth",
+    "authentication",
+    "authorization",
+    "node",
+    "nodejs",
+    "express",
+    "prisma",
+    "jwt",
+    "token",
+    "middleware",
+    "express-middleware",
+    "prisma-client",
+    "security",
+    "login",
+    "register",
+    "user-management",
+    "esm"
+  ],
+  "author": "João Matheus de Oliveira Schmitz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JoaoSchmitz/express-prisma-auth/issues"
+  },
+  "homepage": "https://github.com/JoaoSchmitz/express-prisma-auth#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@prisma/client": "^6.18.0",
+    "dotenv": "^17.2.3",
+    "jest": "^30.2.0",
+    "prisma": "^6.18.0",
+    "supertest": "^7.1.4"
+  }
+}
