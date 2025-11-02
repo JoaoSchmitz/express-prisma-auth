@@ -5,7 +5,7 @@
  * @param {object} dependencies.helpers - Os helpers de hashing e token.
  * @returns {object} O objeto contendo os middlewares.
  */
-export function createAuthMiddleware(prismaClient, helpers) {
+export function createAuthMiddleware({prismaClient, helpers}) {
   /**
    * Middleware de AUTENTICAÇÃO.
    * Verifica se o usuário está logado via JWT (Access Token).
