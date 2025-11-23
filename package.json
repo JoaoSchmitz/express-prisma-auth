@@ -1,6 +1,6 @@
 {
   "name": "@joaoschmitz/express-prisma-auth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "Um módulo de autenticação reutilizável para aplicações Node.js que usam Express e Prisma. Fornece rotas, serviços e middlewares prontos para uso.",
   "main": "index.js",

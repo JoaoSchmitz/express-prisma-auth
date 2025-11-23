@@ -119,7 +119,7 @@ export function createAuthService({
     /**
      * Registra um novo usuário, chama a função pós-registro (via hook) e envia o email de verificação.
      */
-    async register({ nome, email, senha }) {
+    async register({ nome, email, senha, ...extras }) {
       const userExists = await prismaClient.usuario.findUnique({
         where: { email },
       });
@@ -142,7 +142,7 @@ export function createAuthService({
 
         // 2. Chama o hook customizado do app (ex: para criar RelatorioUsuario)
         if (onUserRegistered) {
-          await onUserRegistered(tx, usuario);
+          await onUserRegistered(tx, usuario, extras);
         }
 
         // 3. Envia email de verificação
