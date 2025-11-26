@@ -123,40 +123,79 @@ export function createAuthService({
       const userExists = await prismaClient.usuario.findUnique({
         where: { email },
       });
-      if (userExists) {
-        throw new Error("Email já cadastrado.");
-      }
+
+      let novoUsuario;
       const senhaHash = await helpers.hashPassword(senha);
 
-      const novoUsuario = await prismaClient.$transaction(async (tx) => {
-        // 1. Cria o usuário
-        const usuario = await tx.usuario.create({
-          data: {
-            nome,
-            email,
-            senha: senhaHash,
-            cargo: defaultUserRole,
-            emailVerificado: false,
-          },
-        });
-
-        // 2. Chama o hook customizado do app (ex: para criar RelatorioUsuario)
-        if (onUserRegistered) {
-          await onUserRegistered(tx, usuario, extras);
+      if (userExists) {
+        // CENÁRIO A: Usuário existe e JÁ ESTÁ verificado
+        if (userExists.emailVerified) {
+          throw new Error("Email já cadastrado.");
         }
 
-        // 3. Envia email de verificação
-        await createAndSendToken(
-          usuario.id,
-          AuthTokenType.EMAIL_VERIFICATION,
-          emailService.sendVerificationEmail,
-          usuario.email,
-          null, // Sem payload
-          tx
-        );
+        // CENÁRIO B: Usuário existe mas NÃO ESTÁ verificado
+        extras.userExists = true;
+        novoUsuario = await prismaClient.$transaction(async (tx) => {
+          // 1. Atualiza o usuário
+          const usuario = await tx.usuario.update({
+            where: {
+              id: userExists.id,
+            },
+            data: {
+              nome,
+              senha: senhaHash,
+              emailVerificado: false,
+            },
+          });
 
-        return usuario;
-      });
+          // 2. Chama o hook customizado do app (ex: para criar RelatorioUsuario)
+          if (onUserRegistered) {
+            await onUserRegistered(tx, usuario, extras);
+          }
+
+          // 3. Envia email de verificação
+          await createAndSendToken(
+            usuario.id,
+            AuthTokenType.EMAIL_VERIFICATION,
+            emailService.sendVerificationEmail,
+            usuario.email,
+            null, // Sem payload
+            tx
+          );
+
+          return usuario;
+        });
+      } else {
+        novoUsuario = await prismaClient.$transaction(async (tx) => {
+          // 1. Cria o usuário
+          const usuario = await tx.usuario.create({
+            data: {
+              nome,
+              email,
+              senha: senhaHash,
+              cargo: defaultUserRole,
+              emailVerificado: false,
+            },
+          });
+
+          // 2. Chama o hook customizado do app (ex: para criar RelatorioUsuario)
+          if (onUserRegistered) {
+            await onUserRegistered(tx, usuario, extras);
+          }
+
+          // 3. Envia email de verificação
+          await createAndSendToken(
+            usuario.id,
+            AuthTokenType.EMAIL_VERIFICATION,
+            emailService.sendVerificationEmail,
+            usuario.email,
+            null, // Sem payload
+            tx
+          );
+
+          return usuario;
+        });
+      }
 
       const { senha: _, ...usuarioSemSenha } = novoUsuario;
       return usuarioSemSenha;
